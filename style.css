@@ -1,81 +1,102 @@
+/* Основные стили */
 body {
-    background: #f0f2f5;
-    font-family: 'Arial', sans-serif;
+    background: #f8f9fa;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     padding: 20px;
+    color: #2d3436;
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    gap: 20px;
+    gap: 25px;
 }
 
+/* Карточки */
 .schedule-card, .map-card {
     background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
 }
 
-h2 {
-    color: #2d3436;
-    margin-bottom: 15px;
-}
-
-.map-image {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
+/* Таблица */
 .schedule-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.schedule-table th, .schedule-table td {
-    padding: 12px;
-    border: 1px solid #e0e0e0;
-    text-align: center;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .schedule-table th {
-    background: #f8f9fa;
-    color: #2d3436;
+    background: #4a90e2;
+    color: white;
+    padding: 15px;
+    font-weight: 500;
+    text-align: left;
 }
 
-.schedule-table tr:nth-child(even) {
-    background: #f8f9fa;
+.schedule-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f3f5;
+    background: white;
 }
 
-sl-select::part(control) {
+.schedule-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Элементы управления */
+sl-button::part(base) {
     border-radius: 8px;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
 }
 
-sl-select::part(control):hover {
+sl-button[type="primary"]::part(base) {
+    background: #4a90e2;
     border-color: #4a90e2;
 }
 
-sl-input::part(base) {
-    width: 100px;
+sl-button[type="primary"]:hover::part(base) {
+    background: #357abd;
 }
 
-sl-select, sl-input {
-    transition: all 0.3s ease;
+/* Выпадающие списки */
+sl-select::part(control) {
+    border-radius: 8px;
+    border-color: #e9ecef;
 }
 
-tr:hover td {
-    background: #f1f8ff !important;
+sl-select::part(listbox) {
+    border-radius: 8px;
+    margin-top: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
+/* Карта */
+.map-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.floor-buttons {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+/* Анимации */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 tr {
-    animation: fadeIn 0.4s ease;
+    animation: slideIn 0.3s ease forwards;
 }
