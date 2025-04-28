@@ -7,48 +7,58 @@
 </head>
 <body>
     <div class="container">
-        <!-- Блок управления -->
-        <div class="controls">
-            <sl-button type="primary" onclick="openTimeEditor()">
-                <sl-icon name="clock"></sl-icon> Время
+        <!-- Панель управления -->
+        <div class="controls-card card">
+            <sl-button variant="primary" id="manageSubjects">
+                <sl-icon name="journal-plus"></sl-icon> Предметы
             </sl-button>
-            <sl-button type="primary" onclick="openSubjectEditor()">
-                <sl-icon name="book"></sl-icon> Предметы
+            <sl-button variant="primary" id="addTimeSlot">
+                <sl-icon name="plus-circle"></sl-icon> Добавить время
             </sl-button>
         </div>
 
         <!-- Основная таблица -->
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Время</th>
-                    <th>Пн</th>
-                    <th>Вт</th>
-                    <th>Ср</th>
-                    <th>Чт</th>
-                    <th>Пт</th>
-                    <th>Сб</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="scheduleBody"></tbody>
-        </table>
+        <div class="schedule-card card">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Понедельник</th>
+                        <th>Вторник</th>
+                        <th>Среда</th>
+                        <th>Четверг</th>
+                        <th>Пятница</th>
+                        <th>Суббота</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="day-cell" data-day="monday"></td>
+                        <td class="day-cell" data-day="tuesday"></td>
+                        <td class="day-cell" data-day="wednesday"></td>
+                        <td class="day-cell" data-day="thursday"></td>
+                        <td class="day-cell" data-day="friday"></td>
+                        <td class="day-cell" data-day="saturday"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Карта -->
-        <div class="map-card">
+        <!-- Блок карты -->
+        <div class="map-card card">
             <img id="map" src="maps/floor1.png" class="map-image">
             <div class="floor-buttons">
                 <sl-button-group>
-                    <sl-button onclick="changeFloor(1)">1 этаж</sl-button>
-                    <sl-button onclick="changeFloor(2)">2 этаж</sl-button>
+                    <sl-button variant="primary" data-floor="1">1 этаж</sl-button>
+                    <sl-button data-floor="2">2 этаж</sl-button>
                 </sl-button-group>
             </div>
         </div>
     </div>
 
+    <!-- Подключение скриптов -->
     <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
