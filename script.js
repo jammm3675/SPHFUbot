@@ -1,8 +1,12 @@
 // Инициализация Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyYourKeyHere",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id"
+  apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
+  authDomain: "sphfubot.firebaseapp.com",
+  projectId: "sphfubot",
+  storageBucket: "sphfubot.firebasestorage.app",
+  messagingSenderId: "142367006333",
+  appId: "1:142367006333:web:1cb81a93e09f9754ca1b14",
+  measurementId: "G-HM5NZ6LJTR"
 };
 
 firebase.initializeApp(firebaseConfig);
