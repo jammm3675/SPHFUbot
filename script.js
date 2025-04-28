@@ -1,132 +1,116 @@
-// Настройка Firebase
+// Firebase config (замените на свои данные)
 const firebaseConfig = {
-    apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
-    authDomain: "sphfubot.firebaseapp.com",
-    projectId: "sphfubot",
-    storageBucket: "sphfubot.firebasestorage.app",
-    messagingSenderId: "142367006333",
-    appId: "1:142367006333:web:1cb81a93e09f9754ca1b14",
-    measurementId: "G-HM5NZ6LJTR"
-  };
+    apiKey: "ВАШ_API_KEY",
+    authDomain: "ВАШ_PROJECT.firebaseapp.com",
+    projectId: "ВАШ_PROJECT"
+};
+
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let subjects = []; // Здесь будут храниться предметы
-let schedule = {}; // Структура: { "time": "09:00", "days": { "monday": "Математика", ... } }
+// Загрузка данных
+let subjects = [];
+let timeSlots = [];
 
-// Загрузка предметов из Firebase
-function loadSubjects() {
-    db.collection("subjects").onSnapshot((snapshot) => {
-        subjects = snapshot.docs.map(doc => doc.data().name);
-        renderScheduleTable();
-    });
-}
+// Реальная синхронизация
+db.collection("subjects").onSnapshot(snap => {
+    subjects = snap.docs.map(d => d.data().name);
+    renderTable();
+});
 
-// Загрузка расписания
-function loadSchedule() {
-    db.collection("schedule").onSnapshot((snapshot) => {
-        schedule = {};
-        snapshot.docs.forEach(doc => schedule[doc.id] = doc.data());
-        renderScheduleTable();
-    });
-}
+db.collection("timeSlots").onSnapshot(snap => {
+    timeSlots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTable();
+});
 
-// Редактирование
-function openEdit() {
-    const editor = document.createElement('sl-dialog');
-    editor.label = "Редактирование расписания";
-    editor.innerHTML = `
-        <sl-textarea id="editArea" style="width:100%; height:300px"></sl-textarea>
-        <sl-button slot="footer" type="primary" onclick="saveSchedule()">Сохранить</sl-button>
-    `;
-    document.body.appendChild(editor);
-    editor.show();
-}
-
-function saveSchedule() {
-    const content = document.getElementById('editArea').value;
-    db.collection("schedule").doc("main").set({ content: content });
-    loadSchedule();
-}
-
-// Переключение этажей
-function changeFloor(floor) {
-    document.getElementById('map').src = `map_floor${floor}.png`;
-}
-
-// Запуск при загрузке
-window.onload = loadSchedule;
-
-function renderScheduleTable() {
+// Рендер таблицы
+function renderTable() {
     const tbody = document.getElementById('scheduleBody');
     tbody.innerHTML = '';
 
-    // Для каждого временного слота
-    Object.keys(schedule).forEach(time => {
+    timeSlots.sort((a,b) => a.order - b.order).forEach((slot, index) => {
         const row = document.createElement('tr');
         
-        // Ячейка времени
-        const timeCell = document.createElement('td');
-        const timeInput = document.createElement('sl-input');
-        timeInput.value = time;
-        timeInput.addEventListener('sl-change', (e) => updateTime(time, e.target.value));
-        timeCell.appendChild(timeInput);
-        row.appendChild(timeCell);
+        // Время
+        row.innerHTML = `
+            <td>
+                <sl-input value="${slot.time}" 
+                    @sl-change="${e => updateTime(slot.id, e.target.value)}">
+                </sl-input>
+            </td>
+        `;
 
-        // Ячейки для дней недели
-        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].forEach(day => {
+        // Дни недели
+        ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'].forEach(day => {
             const cell = document.createElement('td');
             const select = document.createElement('sl-select');
             
-            // Пункты выбора
-            subjects.forEach(subject => {
+            // Предметы
+            subjects.forEach(subj => {
                 const option = document.createElement('sl-option');
-                option.value = subject;
-                option.textContent = subject;
+                option.value = subj;
+                option.textContent = subj;
                 select.appendChild(option);
             });
 
             // Текущее значение
-            select.value = schedule[time]?.[day] || '';
-            select.addEventListener('sl-change', (e) => updateSchedule(time, day, e.target.value));
-            
+            select.value = slot[day] || '';
+            select.addEventListener('sl-change', e => {
+                db.collection("timeSlots").doc(slot.id).update({
+                    [day]: e.target.value
+                });
+            });
+
             cell.appendChild(select);
             row.appendChild(cell);
         });
+
+        // Удаление
+        const delCell = document.createElement('td');
+        delCell.innerHTML = `
+            <sl-button variant="danger" 
+                @click="${() => deleteTimeSlot(slot.id)}">
+                <sl-icon name="trash"></sl-icon>
+            </sl-button>
+        `;
+        row.appendChild(delCell);
 
         tbody.appendChild(row);
     });
 }
 
-function openSubjectsEditor() {
-    const dialog = document.createElement('sl-dialog');
-    dialog.label = "Управление предметами";
-    
-    const content = document.createElement('div');
-    content.innerHTML = `
-        <sl-input id="newSubject" placeholder="Новый предмет"></sl-input>
-        <sl-button @click="${addSubject}">Добавить</sl-button>
-        <ul id="subjectsList" style="margin-top:15px;"></ul>
-    `;
-
-    // Рендер списка
-    const list = content.querySelector('#subjectsList');
-    subjects.forEach(subject => {
-        const li = document.createElement('li');
-        li.textContent = subject;
-        li.style.margin = "5px 0";
-        list.appendChild(li);
-    });
-
-    dialog.appendChild(content);
-    document.body.appendChild(dialog);
-    dialog.show();
+// Редакторы
+function openTimeEditor() {
+    const newTime = prompt("Новое время (например: 09:30):");
+    if (newTime) {
+        db.collection("timeSlots").add({
+            time: newTime,
+            order: timeSlots.length,
+            mon: '', tue: '', wed: '', thu: '', fri: '', sat: ''
+        });
+    }
 }
 
-function addSubject() {
-    const input = document.querySelector('#newSubject');
-    if (input.value.trim()) {
-        db.collection("subjects").add({ name: input.value.trim() });
-        input.value = '';
+function openSubjectEditor() {
+    const newSubject = prompt("Новый предмет:");
+    if (newSubject) {
+        db.collection("subjects").add({ name: newSubject });
     }
+}
+
+// Вспомогательные функции
+function updateTime(id, newTime) {
+    db.collection("timeSlots").doc(id).update({ time: newTime });
+}
+
+function deleteTimeSlot(id) {
+    if (confirm("Удалить эту строку?")) {
+        db.collection("timeSlots").doc(id).delete();
+    }
+}
+
+// Карта
+function changeFloor(floor) {
+    document.getElementById('map').src = `maps/floor${floor}.png`;
 }
