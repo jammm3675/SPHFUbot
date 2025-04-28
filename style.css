@@ -1,79 +1,106 @@
-/* Основные стили */
+:root {
+    --neuro-primary: #6366f1;
+    --neuro-secondary: #1a1b1e;
+    --neuro-accent: #10b981;
+    --neuro-glass: rgba(255, 255, 255, 0.05);
+}
+
 body {
-    background: #f8fafc;
-    font-family: 'Segoe UI', system-ui;
+    background: var(--neuro-secondary);
+    color: white;
+    font-family: 'Inter', system-ui;
+    line-height: 1.6;
+}
+
+.neuro-container {
+    max-width: 1440px;
+    margin: 2rem auto;
     padding: 2rem;
-    color: #1e293b;
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    gap: 1.5rem;
-}
-
-/* Карточки */
-.card {
-    background: white;
-    border-radius: 1rem;
+/* Гласс морфизм */
+.neuro-day {
+    background: var(--neuro-glass);
+    backdrop-filter: blur(12px);
+    border-radius: 1.5rem;
     padding: 1.5rem;
-    box-shadow: 0 1rem 3rem rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
-/* Таблица расписания */
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.day-cell {
-    vertical-align: top;
-    padding: 1rem;
-    min-width: 200px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-}
-
-/* Элементы расписания */
-.schedule-item {
+.day-header {
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
     align-items: center;
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.03);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--neuro-primary);
 }
 
-.time-input {
-    width: 5rem;
-    font-weight: 500;
-    color: #6366f1;
+.time-slot {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0.8rem;
+    transition: all 0.3s ease;
 }
 
-/* Карта */
-.map-image {
-    width: 100%;
-    border-radius: 0.75rem;
-    margin-top: 1rem;
-    border: 1px solid #e2e8f0;
+.time-slot:hover {
+    transform: translateX(10px);
+    background: rgba(99, 102, 241, 0.1);
 }
 
-.floor-buttons {
-    margin-top: 1rem;
-    display: flex;
-    gap: 0.5rem;
+/* Кастомные элементы Shoelace */
+sl-select::part(control) {
+    background: rgba(255,255,255,0.05);
+    border: none;
+    border-radius: 0.8rem;
+}
+
+sl-input::part(base) {
+    background: rgba(255,255,255,0.05);
+    border-radius: 0.8rem;
+    border: none;
+}
+
+.neuro-btn::part(base) {
+    background: linear-gradient(45deg, var(--neuro-primary), var(--neuro-accent));
+    border: none;
+    border-radius: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 3D карта */
+.map-container {
+    height: 500px;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: var(--neuro-glass);
+    position: relative;
 }
 
 /* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-1rem); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes neuro-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
 }
 
-.schedule-item {
-    animation: fadeIn 0.3s ease;
+.neuro-day {
+    animation: neuro-pulse 6s ease infinite;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .neuro-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .time-slot {
+        grid-template-columns: 1fr;
+    }
 }
