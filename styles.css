@@ -3,6 +3,7 @@
     --secondary: #f8fafc;
     --background: #ffffff;
     --shadow: 0 4px 6px rgba(0,0,0,0.1);
+    --border-radius: 12px;
 }
 
 body {
@@ -23,34 +24,39 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
-    padding: 1rem;
+    padding: 1.5rem;
     background: var(--background);
-    border-radius: 1rem;
+    border-radius: var(--border-radius);
     box-shadow: var(--shadow);
+}
+
+.title {
+    margin: 0;
+    color: var(--primary);
+    font-size: 2rem;
 }
 
 .schedule-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .day-card {
     background: var(--background);
     padding: 1.5rem;
-    border-radius: 1rem;
+    border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     transition: transform 0.2s ease;
 }
 
 .day-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-5px);
 }
 
 .map-section {
-    margin-top: 2rem;
-    border-radius: 1rem;
+    border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: var(--shadow);
 }
@@ -59,4 +65,14 @@ body {
     width: 100%;
     height: 500px;
     object-fit: cover;
+    display: block;
+}
+
+sl-dialog::part(panel) {
+    border-radius: var(--border-radius);
+    padding: 2rem;
+}
+
+sl-input {
+    margin-bottom: 1rem;
 }
