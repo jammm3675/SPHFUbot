@@ -100,3 +100,17 @@ function changeFloor(floor) {
 }
 
 // Остальные функции (updateTime, removeEntry и т.д.) аналогичны предыдущим примерам
+
+Sortable.create(document.querySelector('.entries-list'), {
+    animation: 150,
+    onEnd: (evt) => {
+        const day = evt.to.closest('[data-day]').dataset.day;
+        const entries = [...evt.to.children].map(item => 
+            ({ 
+                time: item.querySelector('.time-input').value,
+                subject: item.querySelector('sl-select').value
+            })
+        );
+        db.collection("days").doc("schedule").update({ [day]: entries });
+    }
+});
