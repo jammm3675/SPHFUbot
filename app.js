@@ -26,6 +26,7 @@ class ScheduleApp {
     constructor() {
         this.subjects = [];
         this.schedule = {};
+        this.subjectDialog = document.getElementById('subjectDialog');
         this.init();
     }
 
@@ -59,7 +60,10 @@ class ScheduleApp {
             dayCard.innerHTML = `
                 <h3>${this.getDayName(day)}</h3>
                 <div class="entries" data-day="${day}"></div>
-                <sl-button class="add-entry" data-day="${day}">
+                <sl-button 
+                    variant="primary" 
+                    class="add-entry" 
+                    data-day="${day}">
                     + Добавить пару
                 </sl-button>
             `;
@@ -80,18 +84,19 @@ class ScheduleApp {
     }
 
     setupEventListeners() {
-        // Добавление предметов
+        // Открытие диалога
         document.getElementById('addSubjectBtn').addEventListener('click', () => {
-            const dialog = document.getElementById('subjectDialog');
-            dialog.show();
+            this.subjectDialog.show();
         });
 
         // Сохранение предмета
         document.getElementById('saveSubjectBtn').addEventListener('click', async () => {
-            const name = document.getElementById('subjectName').value;
+            const name = document.getElementById('subjectName').value.trim();
             if (name) {
                 await addDoc(collection(db, "subjects"), { name });
                 await this.loadSubjects();
+                this.subjectDialog.hide();
+                document.getElementById('subjectName').value = '';
                 this.render();
             }
         });
