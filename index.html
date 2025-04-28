@@ -2,50 +2,53 @@
 <html>
 <head>
     <title>Умное расписание</title>
-    <link href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/themes/light.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="schedule-card">
-    <h2>🗓️ Расписание</h2>
-    
-    <div class="controls">
-        <sl-button type="primary" @click="${openSubjectsEditor}">✎ Предметы</sl-button>
-        <sl-button type="primary" @click="${addNewDaySlot}">➕ Добавить время</sl-button>
-    </div>
+        <!-- Блок управления -->
+        <div class="controls">
+            <sl-button type="primary" onclick="openTimeEditor()">
+                <sl-icon name="clock"></sl-icon> Время
+            </sl-button>
+            <sl-button type="primary" onclick="openSubjectEditor()">
+                <sl-icon name="book"></sl-icon> Предметы
+            </sl-button>
+        </div>
 
-    <table class="schedule-table">
-        <thead>
-            <tr>
-                <th>Время</th>
-                <th>Понедельник</th>
-                <th>Вторник</th>
-                <th>Среда</th>
-                <th>Четверг</th>
-                <th>Пятница</th>
-                <th>Суббота</th>
-            </tr>
-        </thead>
-        <tbody id="scheduleBody">
+        <!-- Основная таблица -->
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Пн</th>
+                    <th>Вт</th>
+                    <th>Ср</th>
+                    <th>Чт</th>
+                    <th>Пт</th>
+                    <th>Сб</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+        </table>
 
-        </tbody>
-    </table>
-</div>
-
+        <!-- Карта -->
         <div class="map-card">
-            <h2>🗺️ Карта</h2>
+            <img id="map" src="maps/floor1.png" class="map-image">
             <div class="floor-buttons">
                 <sl-button-group>
                     <sl-button onclick="changeFloor(1)">1 этаж</sl-button>
                     <sl-button onclick="changeFloor(2)">2 этаж</sl-button>
                 </sl-button-group>
             </div>
-            <img id="map" src="map_floor1.png" class="map-image">
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/shoelace.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
