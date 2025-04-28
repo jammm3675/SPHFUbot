@@ -62,3 +62,20 @@ sl-select::part(control):hover {
 sl-input::part(base) {
     width: 100px;
 }
+
+sl-select, sl-input {
+    transition: all 0.3s ease;
+}
+
+tr:hover td {
+    background: #f1f8ff !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+tr {
+    animation: fadeIn 0.4s ease;
+}
