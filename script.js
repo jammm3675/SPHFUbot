@@ -1,145 +1,90 @@
-/**************************************************
-         ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА СВОИ!
-**************************************************/
 const firebaseConfig = {
   apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
   authDomain: "sphfubot.firebaseapp.com",
   projectId: "sphfubot",
   storageBucket: "sphfubot.firebasestorage.app",
   messagingSenderId: "142367006333",
-  appId: "1:142367006333:web:1cb81a93e09f9754ca1b14",
-  measurementId: "G-HM5NZ6LJTR"
+  appId: "1:142367006333:web:686bc5f6c65e85cbca1b14",
+  measurementId: "G-KXRZ2P356L"
 };
-/**************************************************/
 
 // Инициализация Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyYourKeyHere",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id"
-};
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Состояние приложения
-let state = {
-    subjects: [],
-    schedule: {},
-    currentFloor: 1
-};
+class ScheduleApp {
+    constructor() {
+        this.subjects = [];
+        this.schedule = {};
+        this.init();
+    }
 
-// Инициализация
-document.addEventListener('DOMContentLoaded', () => {
-    initDragAndDrop();
-    loadInitialData();
-    setupEventListeners();
-});
+    async init() {
+        await this.loadData();
+        this.setupEventListeners();
+        this.initDragAndDrop();
+        this.render();
+    }
 
-// Загрузка данных
-async function loadInitialData() {
-    try {
+    async loadData() {
         const [subjectsSnap, scheduleSnap] = await Promise.all([
             db.collection("subjects").get(),
             db.collection("schedule").doc("main").get()
         ]);
         
-        state.subjects = subjectsSnap.docs.map(d => d.data().name);
-        state.schedule = scheduleSnap.data() || {};
-        
-        renderSchedule();
-    } catch (error) {
-        showError("Ошибка загрузки данных");
+        this.subjects = subjectsSnap.docs.map(d => d.data().name);
+        this.schedule = scheduleSnap.data() || {};
     }
-}
 
-// Рендер расписания
-function renderSchedule() {
-    Object.entries(state.schedule).forEach(([day, entries]) => {
-        const container = document.querySelector(`[data-day="${day}"] .time-slots`);
-        container.innerHTML = '';
-        
-        entries.forEach((entry, index) => {
-            const timeSlot = document.createElement('div');
-            timeSlot.className = 'time-slot';
-            timeSlot.draggable = true;
-            timeSlot.innerHTML = `
-                <sl-input type="time" value="${entry.time}"></sl-input>
-                <sl-select placeholder="Предмет">
-                    ${state.subjects.map(s => `
-                        <sl-option value="${s}">${s}</sl-option>
-                    `).join('')}
-                </sl-select>
-                <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
-            `;
-            
-            // Обработчики событий
-            timeSlot.querySelector('sl-input').addEventListener('change', handleTimeChange);
-            timeSlot.querySelector('sl-select').addEventListener('sl-change', handleSubjectChange);
-            timeSlot.querySelector('.delete-btn').addEventListener('click', deleteTimeSlot);
-            
-            container.appendChild(timeSlot);
+    render() {
+        Object.entries(this.schedule).forEach(([day, entries]) => {
+            const container = document.querySelector(`[data-day="${day}"] .entries-list`);
+            container.innerHTML = entries.map(entry => `
+                <div class="schedule-entry">
+                    <sl-input type="time" value="${entry.time}"></sl-input>
+                    <sl-select value="${entry.subject}">
+                        ${this.subjects.map(s => `<sl-option value="${s}">${s}</sl-option>`).join('')}
+                    </sl-select>
+                    <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
+                </div>
+            `).join('');
         });
-    });
-}
+    }
 
-// Drag and Drop
-function initDragAndDrop() {
-    const containers = document.querySelectorAll('.time-slots');
-    
-    containers.forEach(container => {
-        new Sortable(container, {
-            animation: 150,
-            ghostClass: 'neuro-ghost',
-            onEnd: async (evt) => {
-                const day = evt.to.closest('[data-day]').dataset.day;
-                const newOrder = Array.from(evt.to.children).map(child => {
-                    return {
-                        time: child.querySelector('sl-input').value,
-                        subject: child.querySelector('sl-select').value
-                    };
-                });
-                
-                try {
-                    await db.collection("schedule").doc("main").update({
-                        [day]: newOrder
-                    });
-                } catch (error) {
-                    showError("Ошибка сохранения порядка");
+    initDragAndDrop() {
+        document.querySelectorAll('.entries-list').forEach(container => {
+            new Sortable(container, {
+                animation: 150,
+                onEnd: async (evt) => {
+                    const day = evt.item.closest('.day-card').dataset.day;
+                    const entries = Array.from(evt.from.children).map(item => ({
+                        time: item.querySelector('sl-input').value,
+                        subject: item.querySelector('sl-select').value
+                    }));
+                    await db.collection("schedule").doc("main").update({ [day]: entries });
                 }
+            });
+        });
+    }
+
+    setupEventListeners() {
+        // Добавление предметов
+        document.getElementById('add-subject').addEventListener('click', async () => {
+            const name = prompt("Название предмета:");
+            if (name) {
+                await db.collection("subjects").add({ name });
+                await this.loadData();
+                this.render();
             }
         });
-    });
-}
 
-// AI-фича: Авторасписание
-function generateSmartSchedule() {
-    // Реализация алгоритма AI...
-}
-
-// Показать ошибку
-function showError(message) {
-    const alert = Object.assign(document.createElement('sl-alert'), {
-        variant: 'danger',
-        closable: true,
-        innerHTML: `
-            <sl-icon name="exclamation-octagon" slot="icon"></sl-icon>
-            ${message}
-        `
-    });
-    
-    document.body.appendChild(alert);
-    alert.toast();
-}
-
-// Сохранение всего
-document.getElementById('save-all').addEventListener('click', async () => {
-    try {
-        await db.collection("schedule").doc("main").set(state.schedule);
-        showSuccess("Все изменения сохранены!");
-    } catch (error) {
-        showError("Ошибка сохранения");
+        // Сохранение данных
+        document.getElementById('save-all').addEventListener('click', async () => {
+            await db.collection("schedule").doc("main").set(this.schedule);
+            alert("Все изменения сохранены! 🚀");
+        });
     }
-});
+}
 
-// Остальные функции...
+// Запуск приложения
+window.app = new ScheduleApp();
