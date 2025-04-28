@@ -1,181 +1,131 @@
-// Конфигурация Firebase
+// Инициализация Firebase
 const firebaseConfig = {
-    apiKey: "ВАШ_API_KEY",
-    authDomain: "ВАШ_PROJECT.firebaseapp.com",
-    projectId: "ВАШ_PROJECT_ID"
+    apiKey: "AIzaSyYourKeyHere",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id"
 };
 
-// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Переменные приложения
-let subjects = [];
-let schedule = {};
+// Состояние приложения
+let state = {
+    subjects: [],
+    schedule: {},
+    currentFloor: 1
+};
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    initFirebaseListeners();
+    initDragAndDrop();
+    loadInitialData();
     setupEventListeners();
 });
 
-function initFirebaseListeners() {
-    // Загрузка предметов
-    db.collection("subjects").onSnapshot(snap => {
-        subjects = snap.docs.map(d => d.data().name);
+// Загрузка данных
+async function loadInitialData() {
+    try {
+        const [subjectsSnap, scheduleSnap] = await Promise.all([
+            db.collection("subjects").get(),
+            db.collection("schedule").doc("main").get()
+        ]);
+        
+        state.subjects = subjectsSnap.docs.map(d => d.data().name);
+        state.schedule = scheduleSnap.data() || {};
+        
         renderSchedule();
-    });
-
-    // Загрузка расписания
-    db.collection("schedule").doc("main").onSnapshot(doc => {
-        schedule = doc.data() || {};
-        renderSchedule();
-    });
-}
-
-function setupEventListeners() {
-    // Управление предметами
-    document.getElementById('manageSubjects').addEventListener('click', openSubjectManager);
-    
-    // Добавление временного слота
-    document.getElementById('addTimeSlot').addEventListener('click', addNewTimeSlot);
-    
-    // Переключение этажей
-    document.querySelectorAll('[data-floor]').forEach(btn => {
-        btn.addEventListener('click', () => changeFloor(btn.dataset.floor));
-    });
+    } catch (error) {
+        showError("Ошибка загрузки данных");
+    }
 }
 
 // Рендер расписания
 function renderSchedule() {
-    Object.keys(schedule).forEach(day => {
-        const container = document.querySelector(`[data-day="${day}"]`);
+    Object.entries(state.schedule).forEach(([day, entries]) => {
+        const container = document.querySelector(`[data-day="${day}"] .time-slots`);
         container.innerHTML = '';
         
-        schedule[day].forEach((entry, index) => {
-            const item = document.createElement('div');
-            item.className = 'schedule-item';
-            item.innerHTML = `
-                <sl-input class="time-input" value="${entry.time}"
-                          @sl-change="${e => updateTime(day, index, e.target.value)}">
-                </sl-input>
-                <sl-select value="${entry.subject}" 
-                           @sl-change="${e => updateSubject(day, index, e.target.value)}">
-                    ${subjects.map(s => `<sl-option value="${s}">${s}</sl-option>`).join('')}
+        entries.forEach((entry, index) => {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.draggable = true;
+            timeSlot.innerHTML = `
+                <sl-input type="time" value="${entry.time}"></sl-input>
+                <sl-select placeholder="Предмет">
+                    ${state.subjects.map(s => `
+                        <sl-option value="${s}">${s}</sl-option>
+                    `).join('')}
                 </sl-select>
-                <sl-button variant="danger" size="small" 
-                           @click="${() => removeEntry(day, index)}">
-                    <sl-icon name="trash"></sl-icon>
-                </sl-button>
+                <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
             `;
-            container.appendChild(item);
+            
+            // Обработчики событий
+            timeSlot.querySelector('sl-input').addEventListener('change', handleTimeChange);
+            timeSlot.querySelector('sl-select').addEventListener('sl-change', handleSubjectChange);
+            timeSlot.querySelector('.delete-btn').addEventListener('click', deleteTimeSlot);
+            
+            container.appendChild(timeSlot);
         });
     });
 }
 
-// Добавление новой пары
-function addNewEntry(day) {
-    const newEntry = { time: "09:00", subject: subjects[0] || "" };
-    db.collection("days").doc("schedule").update({
-        [day]: firebase.firestore.FieldValue.arrayUnion(newEntry)
+// Drag and Drop
+function initDragAndDrop() {
+    const containers = document.querySelectorAll('.time-slots');
+    
+    containers.forEach(container => {
+        new Sortable(container, {
+            animation: 150,
+            ghostClass: 'neuro-ghost',
+            onEnd: async (evt) => {
+                const day = evt.to.closest('[data-day]').dataset.day;
+                const newOrder = Array.from(evt.to.children).map(child => {
+                    return {
+                        time: child.querySelector('sl-input').value,
+                        subject: child.querySelector('sl-select').value
+                    };
+                });
+                
+                try {
+                    await db.collection("schedule").doc("main").update({
+                        [day]: newOrder
+                    });
+                } catch (error) {
+                    showError("Ошибка сохранения порядка");
+                }
+            }
+        });
     });
 }
 
-// Обновление времени
-function updateTime(day, index, newTime) {
-    const docRef = db.collection("days").doc("schedule");
-    docRef.get().then(doc => {
-        const entries = [...doc.data()[day]];
-        entries[index].time = newTime;
-        docRef.update({ [day]: entries });
+// AI-фича: Авторасписание
+function generateSmartSchedule() {
+    // Реализация алгоритма AI...
+}
+
+// Показать ошибку
+function showError(message) {
+    const alert = Object.assign(document.createElement('sl-alert'), {
+        variant: 'danger',
+        closable: true,
+        innerHTML: `
+            <sl-icon name="exclamation-octagon" slot="icon"></sl-icon>
+            ${message}
+        `
     });
+    
+    document.body.appendChild(alert);
+    alert.toast();
 }
 
-// Управление предметами
-function openSubjectManager() {
-    const dialog = document.createElement('sl-dialog');
-    dialog.label = "Управление предметами";
-    dialog.innerHTML = `
-        <div class="subject-manager">
-            ${subjects.map(s => `
-                <div class="subject-item">
-                    <span>${s}</span>
-                    <sl-button variant="danger" size="small"
-                              @click="${() => removeSubject(s)}">
-                        Удалить
-                    </sl-button>
-                </div>
-            `).join('')}
-            <sl-input id="newSubject" placeholder="Новый предмет"></sl-input>
-            <sl-button @click="${addSubject}">Добавить</sl-button>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-    dialog.show();
-}// Добавление новой пары
-function addNewEntry(day) {
-    const newEntry = { time: "09:00", subject: subjects[0] || "" };
-    db.collection("days").doc("schedule").update({
-        [day]: firebase.firestore.FieldValue.arrayUnion(newEntry)
-    });
-}
-
-// Обновление времени
-function updateTime(day, index, newTime) {
-    const docRef = db.collection("days").doc("schedule");
-    docRef.get().then(doc => {
-        const entries = [...doc.data()[day]];
-        entries[index].time = newTime;
-        docRef.update({ [day]: entries });
-    });
-}
-
-// Управление предметами
-function openSubjectManager() {
-    const dialog = document.createElement('sl-dialog');
-    dialog.label = "Управление предметами";
-    dialog.innerHTML = `
-        <div class="subject-manager">
-            ${subjects.map(s => `
-                <div class="subject-item">
-                    <span>${s}</span>
-                    <sl-button variant="danger" size="small"
-                              @click="${() => removeSubject(s)}">
-                        Удалить
-                    </sl-button>
-                </div>
-            `).join('')}
-            <sl-input id="newSubject" placeholder="Новый предмет"></sl-input>
-            <sl-button @click="${addSubject}">Добавить</sl-button>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-    dialog.show();
-}
-// Функции управления
-function openSubjectManager() {
-    const dialog = document.createElement('sl-dialog');
-    dialog.label = "Управление предметами";
-    dialog.innerHTML = `
-        <div class="subject-manager">
-            <sl-input id="newSubject" placeholder="Новый предмет"></sl-input>
-            <sl-button variant="primary" @click="${addSubject}">Добавить</sl-button>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-    dialog.show();
-}
-
-function addSubject() {
-    const input = document.getElementById('newSubject');
-    if (input.value.trim()) {
-        db.collection("subjects").add({ name: input.value.trim() });
-        input.value = '';
+// Сохранение всего
+document.getElementById('save-all').addEventListener('click', async () => {
+    try {
+        await db.collection("schedule").doc("main").set(state.schedule);
+        showSuccess("Все изменения сохранены!");
+    } catch (error) {
+        showError("Ошибка сохранения");
     }
-}
+});
 
-function changeFloor(floor) {
-    document.getElementById('map').src = `maps/floor${floor}.png`;
-}
-
-// Остальные функции (updateTime, removeEntry и т.д.) аналогичны предыдущим примерам
+// Остальные функции...
