@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Умное расписание</title>
+    <link href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/themes/light.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="schedule-card">
+            <h2>🗓️ Расписание</h2>
+            <div id="schedule"></div>
+            <sl-button type="primary" onclick="openEdit()">Редактировать</sl-button>
+        </div>
+
+        <div class="map-card">
+            <h2>🗺️ Карта</h2>
+            <div class="floor-buttons">
+                <sl-button-group>
+                    <sl-button onclick="changeFloor(1)">1 этаж</sl-button>
+                    <sl-button onclick="changeFloor(2)">2 этаж</sl-button>
+                </sl-button-group>
+            </div>
+            <img id="map" src="map_floor1.png" class="map-image">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/shoelace.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
