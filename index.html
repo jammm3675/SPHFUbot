@@ -5,24 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPHFU Schedule</title>
     
-    <!-- Shoelace CSS -->
-    <link rel="stylesheet" 
-          href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
+    <!-- Правильное подключение Shoelace -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header class="header">
             <h1 class="title">🎓 Расписание SPHFU</h1>
-            <sl-button variant="primary" id="addSubjectBtn">
-                <sl-icon name="book"></sl-icon> Новый предмет
-            </sl-button>
+            <div class="controls">
+                <sl-button variant="primary" id="addSubjectBtn">
+                    <sl-icon name="book"></sl-icon> Новый предмет
+                </sl-button>
+            </div>
         </header>
 
         <div class="schedule-grid" id="scheduleGrid"></div>
 
         <div class="map-section">
-            <img id="mapImage" src="" alt="Карта" class="map-image">
+            <img id="mapImage" src="maps/floor1.png" alt="Карта" class="map-image">
             <div class="floor-selector">
                 <sl-button-group>
                     <sl-button variant="primary" data-floor="1">1 этаж</sl-button>
@@ -31,16 +34,13 @@
             </div>
         </div>
 
-        <!-- Модальные окна -->
-        <sl-dialog id="subjectDialog" label="Управление предметами">
+        <!-- Модальное окно -->
+        <sl-dialog label="Добавить предмет" class="dialog" id="subjectDialog">
             <sl-input id="subjectName" placeholder="Название предмета"></sl-input>
             <sl-button slot="footer" variant="primary" id="saveSubjectBtn">Сохранить</sl-button>
         </sl-dialog>
     </div>
 
-    <!-- Скрипты -->
-    <script type="module" 
-            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace/shoelace.esm.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
