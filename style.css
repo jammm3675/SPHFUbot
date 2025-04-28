@@ -1,43 +1,55 @@
 :root {
-    --neuro-primary: #6366f1;
-    --neuro-secondary: #1a1b1e;
-    --neuro-accent: #10b981;
-    --neuro-glass: rgba(255, 255, 255, 0.05);
+    --primary: #6366f1;
+    --secondary: #1a1b1e;
+    --accent: #10b981;
+    --glass: rgba(255, 255, 255, 0.05);
 }
 
 body {
-    background: var(--neuro-secondary);
+    background: var(--secondary);
     color: white;
     font-family: 'Inter', system-ui;
     line-height: 1.6;
-}
-
-.neuro-container {
-    max-width: 1440px;
-    margin: 2rem auto;
     padding: 2rem;
 }
 
-/* Гласс морфизм */
-.neuro-day {
-    background: var(--neuro-glass);
+.container {
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* Гласс-морфизм */
+.day-card {
+    background: var(--glass);
     backdrop-filter: blur(12px);
     border-radius: 1.5rem;
     padding: 1.5rem;
     border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
 }
 
-.day-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--neuro-primary);
+.day-card:hover {
+    transform: translateY(-5px);
 }
 
-.time-slot {
+/* Анимированный заголовок */
+.gradient-text {
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient 5s ease infinite;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Элементы расписания */
+.schedule-entry {
     display: grid;
     grid-template-columns: 100px 1fr auto;
     gap: 1rem;
@@ -48,59 +60,22 @@ body {
     transition: all 0.3s ease;
 }
 
-.time-slot:hover {
-    transform: translateX(10px);
+.schedule-entry:hover {
     background: rgba(99, 102, 241, 0.1);
 }
 
-/* Кастомные элементы Shoelace */
-sl-select::part(control) {
-    background: rgba(255,255,255,0.05);
-    border: none;
-    border-radius: 0.8rem;
-}
-
-sl-input::part(base) {
-    background: rgba(255,255,255,0.05);
-    border-radius: 0.8rem;
-    border: none;
-}
-
-.neuro-btn::part(base) {
-    background: linear-gradient(45deg, var(--neuro-primary), var(--neuro-accent));
-    border: none;
-    border-radius: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* 3D карта */
+/* 3D Карта */
 .map-container {
     height: 500px;
     border-radius: 1.5rem;
     overflow: hidden;
-    background: var(--neuro-glass);
+    background: var(--glass);
     position: relative;
-}
-
-/* Анимации */
-@keyframes neuro-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-.neuro-day {
-    animation: neuro-pulse 6s ease infinite;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .neuro-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .time-slot {
+    .schedule-grid {
         grid-template-columns: 1fr;
     }
 }
