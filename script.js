@@ -114,3 +114,6 @@ Sortable.create(document.querySelector('.entries-list'), {
         db.collection("days").doc("schedule").update({ [day]: entries });
     }
 });
+document.querySelectorAll('.time-input').forEach(input => {
+    input.pattern = "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$";
+});
