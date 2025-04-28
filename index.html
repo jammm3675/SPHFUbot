@@ -1,61 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Умное расписание</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSchedule | Умное расписание</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/dark.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Глобальный контейнер -->
+    <div class="neuro-container">
+        
         <!-- Панель управления -->
-        <div class="controls-card card">
-            <sl-button variant="primary" id="manageSubjects">
-                <sl-icon name="journal-plus"></sl-icon> Предметы
+        <div class="control-panel">
+            <sl-button variant="primary" class="neuro-btn" id="add-subject">
+                <sl-icon name="plus-square"></sl-icon> Добавить предмет
             </sl-button>
-            <sl-button variant="primary" id="addTimeSlot">
-                <sl-icon name="plus-circle"></sl-icon> Добавить время
+            <sl-button variant="success" class="neuro-btn" id="save-all">
+                <sl-icon name="cloud-arrow-up"></sl-icon> Сохранить
             </sl-button>
         </div>
 
-        <!-- Основная таблица -->
-        <div class="schedule-card card">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Понедельник</th>
-                        <th>Вторник</th>
-                        <th>Среда</th>
-                        <th>Четверг</th>
-                        <th>Пятница</th>
-                        <th>Суббота</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="day-cell" data-day="monday"></td>
-                        <td class="day-cell" data-day="tuesday"></td>
-                        <td class="day-cell" data-day="wednesday"></td>
-                        <td class="day-cell" data-day="thursday"></td>
-                        <td class="day-cell" data-day="friday"></td>
-                        <td class="day-cell" data-day="saturday"></td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Основная сетка -->
+        <div class="neuro-grid">
+            <!-- Блоки дней недели -->
+            <div class="neuro-day" data-day="monday">
+                <div class="day-header">
+                    <h3>Понедельник</h3>
+                    <sl-icon-button name="plus-circle" class="add-time"></sl-icon-button>
+                </div>
+                <div class="time-slots"></div>
+            </div>
+            
+            <!-- Повторить для других дней -->
+            <!-- tuesday, wednesday... -->
+            
         </div>
 
-        <!-- Блок карты -->
-        <div class="map-card card">
-            <img id="map" src="maps/floor1.png" class="map-image">
-            <div class="floor-buttons">
+        <!-- 3D карта -->
+        <div class="neuro-map">
+            <div class="map-container" id="map"></div>
+            <div class="floor-selector">
                 <sl-button-group>
-                    <sl-button variant="primary" data-floor="1">1 этаж</sl-button>
-                    <sl-button data-floor="2">2 этаж</sl-button>
+                    <sl-button variant="primary" data-floor="1">🌐 1 этаж</sl-button>
+                    <sl-button data-floor="2">🌐 2 этаж</sl-button>
                 </sl-button-group>
             </div>
         </div>
     </div>
 
-    <!-- Подключение скриптов -->
+    <!-- Скрипты -->
     <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
