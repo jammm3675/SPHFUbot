@@ -3,73 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Умное Расписание</title>
+    <title>SPHFU Schedule</title>
     
     <!-- Shoelace CSS -->
     <link rel="stylesheet" 
           href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
-    
-    <!-- Shoelace JS (правильное подключение) -->
-    <script type="module" 
-            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js">
-    </script>
-    
-    <style>
-        /* Основные стили */
-        body {
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Моё Расписание</h1>
-        
-        <!-- Пример компонента Shoelace -->
-        <sl-button variant="primary" id="testBtn">
-            Проверка подключения
-        </sl-button>
-        
-        <!-- Блок расписания -->
-        <div id="schedule"></div>
+        <header class="header">
+            <h1 class="title">🎓 Расписание SPHFU</h1>
+            <sl-button variant="primary" id="addSubjectBtn">
+                <sl-icon name="book"></sl-icon> Новый предмет
+            </sl-button>
+        </header>
+
+        <div class="schedule-grid" id="scheduleGrid"></div>
+
+        <div class="map-section">
+            <img id="mapImage" src="" alt="Карта" class="map-image">
+            <div class="floor-selector">
+                <sl-button-group>
+                    <sl-button variant="primary" data-floor="1">1 этаж</sl-button>
+                    <sl-button data-floor="2">2 этаж</sl-button>
+                </sl-button-group>
+            </div>
+        </div>
+
+        <!-- Модальные окна -->
+        <sl-dialog id="subjectDialog" label="Управление предметами">
+            <sl-input id="subjectName" placeholder="Название предмета"></sl-input>
+            <sl-button slot="footer" variant="primary" id="saveSubjectBtn">Сохранить</sl-button>
+        </sl-dialog>
     </div>
 
-    <!-- Firebase и основной скрипт -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script>
-        // Замените эти данные на свои из Firebase Console
-        const firebaseConfig = {
-            apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
-            authDomain: "sphfubot.firebaseapp.com",
-            projectId: "sphfubot",
-            storageBucket: "sphfubot.firebasestorage.app",
-            messagingSenderId: "142367006333",
-            appId: "1:142367006333:web:686bc5f6c65e85cbca1b14",
-            measurementId: "G-KXRZ2P356L"
-        };
-
-        // Инициализация Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Тестовая функция
-        document.getElementById('testBtn').addEventListener('click', async () => {
-            try {
-                await db.collection('test').add({
-                    message: 'Проверка связи',
-                    timestamp: new Date()
-                });
-                alert('Данные успешно сохранены в Firestore!');
-            } catch (error) {
-                console.error('Ошибка:', error);
-            }
-        });
-    </script>
+    <!-- Скрипты -->
+    <script type="module" 
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace/shoelace.esm.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
