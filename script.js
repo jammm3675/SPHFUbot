@@ -1,116 +1,102 @@
-// Firebase config (замените на свои данные)
+// Конфигурация Firebase
 const firebaseConfig = {
     apiKey: "ВАШ_API_KEY",
     authDomain: "ВАШ_PROJECT.firebaseapp.com",
-    projectId: "ВАШ_PROJECT"
+    projectId: "ВАШ_PROJECT_ID"
 };
 
 // Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Загрузка данных
+// Переменные приложения
 let subjects = [];
-let timeSlots = [];
+let schedule = {};
 
-// Реальная синхронизация
-db.collection("subjects").onSnapshot(snap => {
-    subjects = snap.docs.map(d => d.data().name);
-    renderTable();
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    initFirebaseListeners();
+    setupEventListeners();
 });
 
-db.collection("timeSlots").onSnapshot(snap => {
-    timeSlots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTable();
-});
+function initFirebaseListeners() {
+    // Загрузка предметов
+    db.collection("subjects").onSnapshot(snap => {
+        subjects = snap.docs.map(d => d.data().name);
+        renderSchedule();
+    });
 
-// Рендер таблицы
-function renderTable() {
-    const tbody = document.getElementById('scheduleBody');
-    tbody.innerHTML = '';
-
-    timeSlots.sort((a,b) => a.order - b.order).forEach((slot, index) => {
-        const row = document.createElement('tr');
-        
-        // Время
-        row.innerHTML = `
-            <td>
-                <sl-input value="${slot.time}" 
-                    @sl-change="${e => updateTime(slot.id, e.target.value)}">
-                </sl-input>
-            </td>
-        `;
-
-        // Дни недели
-        ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'].forEach(day => {
-            const cell = document.createElement('td');
-            const select = document.createElement('sl-select');
-            
-            // Предметы
-            subjects.forEach(subj => {
-                const option = document.createElement('sl-option');
-                option.value = subj;
-                option.textContent = subj;
-                select.appendChild(option);
-            });
-
-            // Текущее значение
-            select.value = slot[day] || '';
-            select.addEventListener('sl-change', e => {
-                db.collection("timeSlots").doc(slot.id).update({
-                    [day]: e.target.value
-                });
-            });
-
-            cell.appendChild(select);
-            row.appendChild(cell);
-        });
-
-        // Удаление
-        const delCell = document.createElement('td');
-        delCell.innerHTML = `
-            <sl-button variant="danger" 
-                @click="${() => deleteTimeSlot(slot.id)}">
-                <sl-icon name="trash"></sl-icon>
-            </sl-button>
-        `;
-        row.appendChild(delCell);
-
-        tbody.appendChild(row);
+    // Загрузка расписания
+    db.collection("schedule").doc("main").onSnapshot(doc => {
+        schedule = doc.data() || {};
+        renderSchedule();
     });
 }
 
-// Редакторы
-function openTimeEditor() {
-    const newTime = prompt("Новое время (например: 09:30):");
-    if (newTime) {
-        db.collection("timeSlots").add({
-            time: newTime,
-            order: timeSlots.length,
-            mon: '', tue: '', wed: '', thu: '', fri: '', sat: ''
+function setupEventListeners() {
+    // Управление предметами
+    document.getElementById('manageSubjects').addEventListener('click', openSubjectManager);
+    
+    // Добавление временного слота
+    document.getElementById('addTimeSlot').addEventListener('click', addNewTimeSlot);
+    
+    // Переключение этажей
+    document.querySelectorAll('[data-floor]').forEach(btn => {
+        btn.addEventListener('click', () => changeFloor(btn.dataset.floor));
+    });
+}
+
+// Рендер расписания
+function renderSchedule() {
+    Object.keys(schedule).forEach(day => {
+        const container = document.querySelector(`[data-day="${day}"]`);
+        container.innerHTML = '';
+        
+        schedule[day].forEach((entry, index) => {
+            const item = document.createElement('div');
+            item.className = 'schedule-item';
+            item.innerHTML = `
+                <sl-input class="time-input" value="${entry.time}"
+                          @sl-change="${e => updateTime(day, index, e.target.value)}">
+                </sl-input>
+                <sl-select value="${entry.subject}" 
+                           @sl-change="${e => updateSubject(day, index, e.target.value)}">
+                    ${subjects.map(s => `<sl-option value="${s}">${s}</sl-option>`).join('')}
+                </sl-select>
+                <sl-button variant="danger" size="small" 
+                           @click="${() => removeEntry(day, index)}">
+                    <sl-icon name="trash"></sl-icon>
+                </sl-button>
+            `;
+            container.appendChild(item);
         });
+    });
+}
+
+// Функции управления
+function openSubjectManager() {
+    const dialog = document.createElement('sl-dialog');
+    dialog.label = "Управление предметами";
+    dialog.innerHTML = `
+        <div class="subject-manager">
+            <sl-input id="newSubject" placeholder="Новый предмет"></sl-input>
+            <sl-button variant="primary" @click="${addSubject}">Добавить</sl-button>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+    dialog.show();
+}
+
+function addSubject() {
+    const input = document.getElementById('newSubject');
+    if (input.value.trim()) {
+        db.collection("subjects").add({ name: input.value.trim() });
+        input.value = '';
     }
 }
 
-function openSubjectEditor() {
-    const newSubject = prompt("Новый предмет:");
-    if (newSubject) {
-        db.collection("subjects").add({ name: newSubject });
-    }
-}
-
-// Вспомогательные функции
-function updateTime(id, newTime) {
-    db.collection("timeSlots").doc(id).update({ time: newTime });
-}
-
-function deleteTimeSlot(id) {
-    if (confirm("Удалить эту строку?")) {
-        db.collection("timeSlots").doc(id).delete();
-    }
-}
-
-// Карта
 function changeFloor(floor) {
     document.getElementById('map').src = `maps/floor${floor}.png`;
 }
+
+// Остальные функции (updateTime, removeEntry и т.д.) аналогичны предыдущим примерам
