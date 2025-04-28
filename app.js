@@ -1,16 +1,26 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { 
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
-  authDomain: "sphfubot.firebaseapp.com",
-  projectId: "sphfubot",
-  storageBucket: "sphfubot.firebasestorage.app",
-  messagingSenderId: "142367006333",
-  appId: "1:142367006333:web:686bc5f6c65e85cbca1b14",
-  measurementId: "G-KXRZ2P356L"
+    apiKey: "AIzaSyCXWPjVWQcIuJKsH0b_lPmn4ZatQTaMOP0",
+    authDomain: "sphfubot.firebaseapp.com",
+    projectId: "sphfubot",
+    storageBucket: "sphfubot.firebasestorage.app",
+    messagingSenderId: "142367006333",
+    appId: "1:142367006333:web:686bc5f6c65e85cbca1b14",
+    measurementId: "G-KXRZ2P356L"
 };
 
-// Инициализация Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 class ScheduleApp {
     constructor() {
@@ -20,71 +30,75 @@ class ScheduleApp {
     }
 
     async init() {
-        await this.loadData();
+        await this.loadSubjects();
+        await this.loadSchedule();
         this.setupEventListeners();
-        this.initDragAndDrop();
         this.render();
     }
 
-    async loadData() {
-        const [subjectsSnap, scheduleSnap] = await Promise.all([
-            db.collection("subjects").get(),
-            db.collection("schedule").doc("main").get()
-        ]);
-        
-        this.subjects = subjectsSnap.docs.map(d => d.data().name);
-        this.schedule = scheduleSnap.data() || {};
+    async loadSubjects() {
+        const snapshot = await getDocs(collection(db, "subjects"));
+        this.subjects = snapshot.docs.map(d => d.data().name);
+    }
+
+    async loadSchedule() {
+        const snapshot = await getDocs(collection(db, "schedule"));
+        this.schedule = {};
+        snapshot.forEach(doc => {
+            this.schedule[doc.id] = doc.data();
+        });
     }
 
     render() {
-        Object.entries(this.schedule).forEach(([day, entries]) => {
-            const container = document.querySelector(`[data-day="${day}"] .entries-list`);
-            container.innerHTML = entries.map(entry => `
-                <div class="schedule-entry">
-                    <sl-input type="time" value="${entry.time}"></sl-input>
-                    <sl-select value="${entry.subject}">
-                        ${this.subjects.map(s => `<sl-option value="${s}">${s}</sl-option>`).join('')}
-                    </sl-select>
-                    <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
-                </div>
-            `).join('');
+        const grid = document.getElementById('scheduleGrid');
+        grid.innerHTML = '';
+        
+        Object.entries(this.schedule).forEach(([day, data]) => {
+            const dayCard = document.createElement('div');
+            dayCard.className = 'day-card';
+            dayCard.innerHTML = `
+                <h3>${this.getDayName(day)}</h3>
+                <div class="entries" data-day="${day}"></div>
+                <sl-button class="add-entry" data-day="${day}">
+                    + Добавить пару
+                </sl-button>
+            `;
+            grid.appendChild(dayCard);
         });
     }
 
-    initDragAndDrop() {
-        document.querySelectorAll('.entries-list').forEach(container => {
-            new Sortable(container, {
-                animation: 150,
-                onEnd: async (evt) => {
-                    const day = evt.item.closest('.day-card').dataset.day;
-                    const entries = Array.from(evt.from.children).map(item => ({
-                        time: item.querySelector('sl-input').value,
-                        subject: item.querySelector('sl-select').value
-                    }));
-                    await db.collection("schedule").doc("main").update({ [day]: entries });
-                }
-            });
-        });
+    getDayName(dayKey) {
+        const days = {
+            monday: 'Понедельник',
+            tuesday: 'Вторник',
+            wednesday: 'Среда',
+            thursday: 'Четверг',
+            friday: 'Пятница',
+            saturday: 'Суббота'
+        };
+        return days[dayKey] || dayKey;
     }
 
     setupEventListeners() {
         // Добавление предметов
-        document.getElementById('add-subject').addEventListener('click', async () => {
-            const name = prompt("Название предмета:");
-            if (name) {
-                await db.collection("subjects").add({ name });
-                await this.loadData();
-                this.render();
-            }
+        document.getElementById('addSubjectBtn').addEventListener('click', () => {
+            const dialog = document.getElementById('subjectDialog');
+            dialog.show();
         });
 
-        // Сохранение данных
-        document.getElementById('save-all').addEventListener('click', async () => {
-            await db.collection("schedule").doc("main").set(this.schedule);
-            alert("Все изменения сохранены! 🚀");
+        // Сохранение предмета
+        document.getElementById('saveSubjectBtn').addEventListener('click', async () => {
+            const name = document.getElementById('subjectName').value;
+            if (name) {
+                await addDoc(collection(db, "subjects"), { name });
+                await this.loadSubjects();
+                this.render();
+            }
         });
     }
 }
 
-// Запуск приложения
-window.app = new ScheduleApp();
+// Инициализация приложения
+window.addEventListener('DOMContentLoaded', () => {
+    new ScheduleApp();
+});
