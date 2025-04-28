@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSchedule | AI-Powered Расписание</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/dark.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <title>Умное Расписание</title>
+    
+    <!-- Shoelace CSS -->
+    <link rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css">
+    
+    <!-- Shoelace JS (правильное подключение) -->
+    <script type="module" 
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js">
+    </script>
+    
+    <style>
+        /* Основные стили */
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-    <main class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1 class="gradient-text">NeuroSchedule</h1>
-            <div class="controls">
-                <sl-button variant="primary" class="neu-button" id="add-subject">
-                    <sl-icon name="plus-square"></sl-icon> Новый предмет
-                </sl-button>
-                <sl-button variant="success" class="neu-button" id="save-all">
-                    <sl-icon name="cloud-arrow-up"></sl-icon> Сохранить всё
-                </sl-button>
-            </div>
-        </header>
+    <div class="container">
+        <h1>Моё Расписание</h1>
+        
+        <!-- Пример компонента Shoelace -->
+        <sl-button variant="primary" id="testBtn">
+            Проверка подключения
+        </sl-button>
+        
+        <!-- Блок расписания -->
+        <div id="schedule"></div>
+    </div>
 
-        <!-- Schedule Grid -->
-        <div class="schedule-grid">
-            <div class="day-card" data-day="monday">
-                <div class="day-header">
-                    <h2>Понедельник</h2>
-                    <sl-icon-button name="plus-circle" class="add-entry"></sl-icon-button>
-                </div>
-                <div class="entries-list"></div>
-            </div>
-            <!-- Повторить для других дней -->
-        </div>
-
-        <!-- 3D Map -->
-        <div class="map-section">
-            <div class="map-container" id="map"></div>
-            <div class="floor-selector">
-                <sl-button-group>
-                    <sl-button variant="primary" data-floor="1">🛸 1 Этаж</sl-button>
-                    <sl-button data-floor="2">🚀 2 Этаж</sl-button>
-                </sl-button-group>
-            </div>
-        </div>
-    </main>
-
-    <!-- Скрипты -->
-    <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <!-- Firebase и основной скрипт -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js"></script>
-    <script type="module" 
-            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace/shoelace.esm.js">
+    <script>
+        // Замените эти данные на свои из Firebase Console
+        const firebaseConfig = {
+            apiKey: "ВАШ_API_KEY",
+            authDomain: "ВАШ_ПРОЕКТ.firebaseapp.com",
+            projectId: "ВАШ_ID_ПРОЕКТА",
+            storageBucket: "ВАШ_ПРОЕКТ.appspot.com",
+            messagingSenderId: "ВАШ_SENDER_ID",
+            appId: "ВАШ_APP_ID"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Тестовая функция
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            try {
+                await db.collection('test').add({
+                    message: 'Проверка связи',
+                    timestamp: new Date()
+                });
+                alert('Данные успешно сохранены в Firestore!');
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+        });
     </script>
-</head>
-<body>
-    <!-- Ваше приложение -->
-    <sl-button variant="primary">Тест</sl-button>
 </body>
 </html>
