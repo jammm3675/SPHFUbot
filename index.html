@@ -3,56 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSchedule | Умное расписание</title>
+    <title>NeuroSchedule | AI-Powered Расписание</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/dark.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Глобальный контейнер -->
-    <div class="neuro-container">
-        
-        <!-- Панель управления -->
-        <div class="control-panel">
-            <sl-button variant="primary" class="neuro-btn" id="add-subject">
-                <sl-icon name="plus-square"></sl-icon> Добавить предмет
-            </sl-button>
-            <sl-button variant="success" class="neuro-btn" id="save-all">
-                <sl-icon name="cloud-arrow-up"></sl-icon> Сохранить
-            </sl-button>
-        </div>
-
-        <!-- Основная сетка -->
-        <div class="neuro-grid">
-            <!-- Блоки дней недели -->
-            <div class="neuro-day" data-day="monday">
-                <div class="day-header">
-                    <h3>Понедельник</h3>
-                    <sl-icon-button name="plus-circle" class="add-time"></sl-icon-button>
-                </div>
-                <div class="time-slots"></div>
+    <main class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="gradient-text">NeuroSchedule</h1>
+            <div class="controls">
+                <sl-button variant="primary" class="neu-button" id="add-subject">
+                    <sl-icon name="plus-square"></sl-icon> Новый предмет
+                </sl-button>
+                <sl-button variant="success" class="neu-button" id="save-all">
+                    <sl-icon name="cloud-arrow-up"></sl-icon> Сохранить всё
+                </sl-button>
             </div>
-            
+        </header>
+
+        <!-- Schedule Grid -->
+        <div class="schedule-grid">
+            <div class="day-card" data-day="monday">
+                <div class="day-header">
+                    <h2>Понедельник</h2>
+                    <sl-icon-button name="plus-circle" class="add-entry"></sl-icon-button>
+                </div>
+                <div class="entries-list"></div>
+            </div>
             <!-- Повторить для других дней -->
-            <!-- tuesday, wednesday... -->
-            
         </div>
 
-        <!-- 3D карта -->
-        <div class="neuro-map">
+        <!-- 3D Map -->
+        <div class="map-section">
             <div class="map-container" id="map"></div>
             <div class="floor-selector">
                 <sl-button-group>
-                    <sl-button variant="primary" data-floor="1">🌐 1 этаж</sl-button>
-                    <sl-button data-floor="2">🌐 2 этаж</sl-button>
+                    <sl-button variant="primary" data-floor="1">🛸 1 Этаж</sl-button>
+                    <sl-button data-floor="2">🚀 2 Этаж</sl-button>
                 </sl-button-group>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Скрипты -->
     <script src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
