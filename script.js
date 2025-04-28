@@ -13,74 +13,133 @@ const firebaseConfig = {
 /**************************************************/
 
 // Инициализация Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyYourKeyHere",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id"
+};
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Функционал приложения
+// Состояние приложения
+let state = {
+    subjects: [],
+    schedule: {},
+    currentFloor: 1
+};
+
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    // Загрузка данных
-    loadSubjects();
-    loadSchedule();
-
-    // Обработчики событий
-    document.getElementById('add-subject').addEventListener('click', addSubject);
-    document.querySelectorAll('.add-time').forEach(btn => {
-        btn.addEventListener('click', function() {
-            addTimeSlot(this.closest('.day').dataset.day);
-        });
-    });
-
-    // Переключение этажей
-    document.querySelectorAll('[data-floor]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('map').src = `maps/floor${btn.dataset.floor}.png`;
-        });
-    });
+    initDragAndDrop();
+    loadInitialData();
+    setupEventListeners();
 });
 
-async function loadSubjects() {
-    const snapshot = await db.collection("subjects").get();
-    window.subjects = snapshot.docs.map(d => d.data().name);
-}
-
-async function loadSchedule() {
-    const doc = await db.collection("schedule").doc("main").get();
-    window.schedule = doc.data() || {};
-    renderSchedule();
-}
-
-function renderSchedule() {
-    Object.entries(window.schedule).forEach(([day, entries]) => {
-        const container = document.querySelector(`[data-day="${day}"] .entries`);
-        container.innerHTML = '';
+// Загрузка данных
+async function loadInitialData() {
+    try {
+        const [subjectsSnap, scheduleSnap] = await Promise.all([
+            db.collection("subjects").get(),
+            db.collection("schedule").doc("main").get()
+        ]);
         
-        entries.forEach(entry => {
-            const div = document.createElement('div');
-            div.className = 'time-row';
-            div.innerHTML = `
-                <sl-input type="time" value="${entry.time}"></sl-input>
-                <sl-select placeholder="Предмет">
-                    ${window.subjects.map(s => `<sl-option value="${s}">${s}</sl-option>`).join('')}
-                </sl-select>
-                <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
-            `;
-            container.appendChild(div);
-        });
-    });
-}
-
-async function addSubject() {
-    const name = prompt("Введите название предмета:");
-    if (name) {
-        await db.collection("subjects").add({ name });
-        loadSubjects();
+        state.subjects = subjectsSnap.docs.map(d => d.data().name);
+        state.schedule = scheduleSnap.data() || {};
+        
+        renderSchedule();
+    } catch (error) {
+        showError("Ошибка загрузки данных");
     }
 }
 
-async function addTimeSlot(day) {
-    const newEntry = { time: "09:00", subject: "" };
-    await db.collection("schedule").doc("main").update({
-        [day]: firebase.firestore.FieldValue.arrayUnion(newEntry)
+// Рендер расписания
+function renderSchedule() {
+    Object.entries(state.schedule).forEach(([day, entries]) => {
+        const container = document.querySelector(`[data-day="${day}"] .time-slots`);
+        container.innerHTML = '';
+        
+        entries.forEach((entry, index) => {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.draggable = true;
+            timeSlot.innerHTML = `
+                <sl-input type="time" value="${entry.time}"></sl-input>
+                <sl-select placeholder="Предмет">
+                    ${state.subjects.map(s => `
+                        <sl-option value="${s}">${s}</sl-option>
+                    `).join('')}
+                </sl-select>
+                <sl-icon-button name="trash" class="delete-btn"></sl-icon-button>
+            `;
+            
+            // Обработчики событий
+            timeSlot.querySelector('sl-input').addEventListener('change', handleTimeChange);
+            timeSlot.querySelector('sl-select').addEventListener('sl-change', handleSubjectChange);
+            timeSlot.querySelector('.delete-btn').addEventListener('click', deleteTimeSlot);
+            
+            container.appendChild(timeSlot);
+        });
     });
-    loadSchedule();
 }
+
+// Drag and Drop
+function initDragAndDrop() {
+    const containers = document.querySelectorAll('.time-slots');
+    
+    containers.forEach(container => {
+        new Sortable(container, {
+            animation: 150,
+            ghostClass: 'neuro-ghost',
+            onEnd: async (evt) => {
+                const day = evt.to.closest('[data-day]').dataset.day;
+                const newOrder = Array.from(evt.to.children).map(child => {
+                    return {
+                        time: child.querySelector('sl-input').value,
+                        subject: child.querySelector('sl-select').value
+                    };
+                });
+                
+                try {
+                    await db.collection("schedule").doc("main").update({
+                        [day]: newOrder
+                    });
+                } catch (error) {
+                    showError("Ошибка сохранения порядка");
+                }
+            }
+        });
+    });
+}
+
+// AI-фича: Авторасписание
+function generateSmartSchedule() {
+    // Реализация алгоритма AI...
+}
+
+// Показать ошибку
+function showError(message) {
+    const alert = Object.assign(document.createElement('sl-alert'), {
+        variant: 'danger',
+        closable: true,
+        innerHTML: `
+            <sl-icon name="exclamation-octagon" slot="icon"></sl-icon>
+            ${message}
+        `
+    });
+    
+    document.body.appendChild(alert);
+    alert.toast();
+}
+
+// Сохранение всего
+document.getElementById('save-all').addEventListener('click', async () => {
+    try {
+        await db.collection("schedule").doc("main").set(state.schedule);
+        showSuccess("Все изменения сохранены!");
+    } catch (error) {
+        showError("Ошибка сохранения");
+    }
+});
+
+// Остальные функции...
